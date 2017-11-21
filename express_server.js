@@ -6,8 +6,15 @@ const shortid = require("shortid");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+
+// Problematic cookieSession setup
+// app.use(cookieSession({
+//   name: "testSession",
+//   keys: ["testUser"],
+//   maxAge: 24 * 60 * 60 * 1000 // 24 hours
+// }
 
 // Problematic in-memory URL database
 const urlDatabase = {
@@ -37,7 +44,7 @@ app.listen(PORT, () => {
 // Begin routes
 
 app.get("/", (req, res) => {
-  res.redirect("urls_index");
+  res.redirect("urls");
 });
 
 app.get("/urls", (req, res) => {
@@ -80,14 +87,33 @@ app.get("/register", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
-  const user = validateCredentials(username, password);
-  if (user) {
-    console.log(user, "has logged in.");
-    res.redirect("/urls_show");
-  } else {
-    res.redirect("/urls_index");
-  }
+  res.cookie("username", username);
+  // const user = validateCredentials(username, password);
+  // if (user) {
+  //   console.log(user, "has logged in.");
+  //   res.redirect("/urls_show");
+  // } else {
+  //   res.redirect("/urls_index");
+  // }
+  res.redirect("/urls_index");
 });
+
+// Registration handler
+
+app.post("/register", (req,res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const userId = generateRandomString();
+  let user = {
+    "id": userId,
+    "email": email,
+    "password": password,
+  };
+  users[userId] = user;
+  req.session.userId = userId; // Sets cookie containing "userId: $randomString"
+  res.redirect("/urls/");
+});
+
 
 // Delete existing URL
 app.post("/urls/:id/delete", (req, res) => {
@@ -106,10 +132,10 @@ function generateRandomString() {
   return shortid.generate();
 }
 
-function findUserByEmail(email) {
-  return users.find((user) => user.email == email);
-}
+// function findUserByEmail(email) {
+//   return users.find((user) => user.email == email);
+// }
 
-function validateCredentials(username, password) {
-  return users.find((user) => user.email == username && user.password == password);
-}
+// function validateCredentials(username, password) {
+//   return users.find((user) => user.email == username && user.password == password);
+// }
