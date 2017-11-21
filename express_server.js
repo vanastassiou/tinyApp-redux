@@ -58,6 +58,14 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+// Login handler
+app.post("/login", (req, res) => {
+  let username = req.body.username
+  res.cookie("username", username);
+  res.redirect("/urls");
+
+});
+
 function generateRandomString() {
   return shortid.generate();
 }
