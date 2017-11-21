@@ -3,9 +3,9 @@
 This is my second attempt at the TinyApp project for Lighthouse Labs. I decided to start from scratch because it was a better use of my time than trying to untangle my code spaghetti from a week and a half ago.
 
 
-## Functional requirements (from the project page)
+# Functional requirements (from the project page)
 
-1. User Stories
+### User Stories
 * As an avid Twitter poster, I want to be able to shorten links so that I can fit more non-link text in my tweets
 * As a Twitter reader, I want to be able to visit sites via shortened links, so that I can read interesting content
 * (Stretch) As an avid Twitter poster, I want to be able to see how many times my subscribers visit my links, so that I can learn what content they like
@@ -26,7 +26,7 @@ This is my second attempt at the TinyApp project for Lighthouse Labs. I decided 
 * if user is not logged in:
   * redirect to /login
 
-##GET /urls
+## GET /urls
 * if user is logged in:
   * returns HTML with:
     * the site header (see Display Requirements above)
@@ -76,14 +76,14 @@ This is my second attempt at the TinyApp project for Lighthouse Labs. I decided 
 * if URL for the given ID does not exist:
   * returns HTML with a relevant error message
 
-##POST /urls
+## POST /urls
 * if user is logged in:
   * generates a short URL, saves it, and associates it with the user
   * redirects to /urls/:id, where :id matches the ID of the newly saved URL
 * if user is not logged in:
   * returns HTML with a relevant error message
 
-##POST /urls/:id
+## POST /urls/:id
 * if user is logged in and owns the URL for the given ID:
   * updates the URL
   * redirects to /urls
@@ -92,7 +92,7 @@ This is my second attempt at the TinyApp project for Lighthouse Labs. I decided 
 * if user is logged it but does not own the URL for the given ID:
   * returns HTML with a relevant error message
 
-##POST /urls/:id/delete
+## POST /urls/:id/delete
 * if user is logged in and owns the URL for the given ID:
   * deletes the URL
   * redirects to /urls
@@ -101,7 +101,7 @@ This is my second attempt at the TinyApp project for Lighthouse Labs. I decided 
 * if user is logged it but does not own the URL for the given ID:
   * returns HTML with a relevant error message
 
-##GET /login
+## GET /login
 * if user is logged in:
   * (Minor) redirects to /urls
 * if user is not logged in:
