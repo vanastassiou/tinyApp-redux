@@ -40,20 +40,6 @@ app.get("/", (req, res) => {
   res.redirect("urls_index");
 });
 
-app.get('/', (req, res) => {
-  let admin = false;
-//  if (req.cookies.user) {
-//  if (req.session.id) {
-  if (req.user) {
-    //let id = req.cookies.user;
-    //let id = req.session.id;
-    //let user = findById(id);
-    admin = req.user.admin;
-    loggedIn = true;
-  }
-  res.render('index', {loggedIn, admin});
-});
-
 app.get("/urls", (req, res) => {
   let loggedIn = false;
   let templateVars = { urls: urlDatabase };
@@ -71,10 +57,9 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  console.log("New shortURL: ", shortURL);
-  console.log(req.body.longURL);
+  console.log("New shortURL", shortURL, "registed for", req.body.longURL);
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase);
+  console.log("Current state of URL DB:", urlDatabase);
   res.redirect(`/urls:${shortURL}`);
 });
 
@@ -84,7 +69,11 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render('login');
+  res.render("login");
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
 });
 
 // Login handler
