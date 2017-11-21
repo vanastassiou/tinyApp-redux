@@ -4,12 +4,9 @@
     <title>TinyApp Header</title>
   </head>
   <body>
-    <h2>Welcome to Our App</h2>
-    <% if (loggedIn) { %>
-
-      <a href="/logout" title="Logout">Logout</a>
-    <% } else { %>
-      <a href="/login" title="Login">Login</a>
-    <% } %>
-  </body>
+    <h2>TinyApp</h2>
+    <form method="POST" action="/login">
+      <input type="text" name="username" placeholder="Your email address">
+      <input type="submit" value="Login">
+		</form>
 </html>
