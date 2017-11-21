@@ -4,11 +4,17 @@
   <title>TinyApp</title>
 </head>
 <body>
+  <header>
+    <% include partials/_header %>
+  </header>
+
   <ul> Here are some long URLs and their short versions:
     <% for (key in urls) { %>
         <li><%= key %> - <%= urls[key] %></li>
     <% }; %>
   </ul>
+
   <p>Got a new link to shorten? Click <a href="/shorten">here!</a></p>
+
 </body>
 </html>
