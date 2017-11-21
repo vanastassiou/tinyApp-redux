@@ -18,7 +18,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { URLs: urlDatabase };
+  let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -45,6 +45,11 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  console.log("Current state of urlDatabase:", urlDatabase);
+  res.redirect("/urls");
+});
 
 function generateRandomString() {
   return shortid.generate();
