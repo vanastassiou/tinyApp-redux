@@ -58,7 +58,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-// Login handler
+// Handle login
 app.post("/login", (req, res) => {
   let username = req.body.username
   res.cookie("username", username);
