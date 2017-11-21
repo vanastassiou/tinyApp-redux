@@ -1,15 +1,20 @@
 <!doctype html>
 <html>
   <head>
-    <title>TinyApp Header</title>
+    <title></title>
   </head>
   <body>
     <h2>Welcome to Our App</h2>
-    <% if (loggedIn) { %>
-
-      <a href="/logout" title="Logout">Logout</a>
-    <% } else { %>
-      <a href="/login" title="Login">Login</a>
+    <% if (username) { %>
+      <p>Welcome back, <%= username %>!</p>
+      <form method="POST" action="/logout"><input type="submit" value="Log out">
+      </form>
+          <% } else { %>
+      <p>
+        <form method="POST" action="/login">
+          <input type="text" name="username"> <input type="submit" value="Log in">
+        </form>
+       or <a href="/register">Register</a></p>
     <% } %>
   </body>
 </html>

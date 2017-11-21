@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  	<title>TinyApp | Sign up</title>
+  </head>
+  <body style="font-size:20px; padding:50px;">
+      <% include partials/_header %>
+	  <form action="/register" method="POST">
+  	  <label form="email">Sign up to use TinyApp:</label>
+  	  <input id="email" type="email" name="email" placeholder="your@email.com">
+  	  <input id="password" type="password" name="password" placeholder="Choose a strong password">
+  	  <input type="submit" value="Submit">
+	  </form>
+  </body>
+</html>
