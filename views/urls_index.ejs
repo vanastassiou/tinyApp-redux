@@ -9,8 +9,13 @@
   </header>
 
   <ul> Here are some long URLs and their short versions:
-    <% for (key in urls) { %>
-        <li><%= key %> - <%= urls[key] %></li>
+    <% for (key in URLs) { %>
+        <li><%= key %> - <%= URLs[key] %>
+          <a href="/urls/<%= key %>">Edit</a>
+          <form method="POST" action="/urls/<%= URLs[key] %>/delete">
+            <button type="submit">Delete</button>
+          </form>
+        </li>
     <% }; %>
   </ul>
 

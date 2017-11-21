@@ -18,7 +18,7 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { URLs: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
