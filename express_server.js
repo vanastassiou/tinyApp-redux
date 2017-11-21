@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const shortid = require("shortid");
+const username = "username";
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -18,16 +19,25 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id };
+  let templateVars = {
+    shortURL: req.params.id,
+    username: req.cookies["username"]
+  };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"]
+  };
   res.render("urls_new");
 });
 
@@ -63,8 +73,15 @@ app.post("/login", (req, res) => {
   let username = req.body.username
   res.cookie("username", username);
   res.redirect("/urls");
-
 });
+
+// Handle logout
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
+
 
 function generateRandomString() {
   return shortid.generate();
