@@ -7,8 +7,6 @@ const shortid = require("shortid");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-
-
 // Crappy in-memory database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -34,9 +32,19 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  let shortURL = generateRandomString();
+  console.log("shortURL = ", shortURL);
+  console.log(req.body.longURL);
+  urlDatabase[shortURL] = req.body.longURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls:${shortURL}`);
 });
+
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
 
 function generateRandomString() {
   return shortid.generate();
