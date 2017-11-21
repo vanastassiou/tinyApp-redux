@@ -3,21 +3,59 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
 const shortid = require("shortid");
+const cookieSession = require("cookie-session");
+const bcrypt = require("bcrypt");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-// Crappy in-memory database
+// Problematic in-memory URL database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+// Problematic in-memory user database
+
+const users = {
+  1: {
+    id: "1",
+    email: "weebl@weebls-stuff.com",
+    password: "12345678",
+  },
+  2: {
+    id: "2",
+    email: "bob@weebls-stuff.com",
+    password: "abcdefg",
+  },
 };
 
 app.listen(PORT, () => {
   console.log(`TinyApp server listening on port ${PORT}!`);
 });
 
+// Begin routes
+
+app.get("/", (req, res) => {
+  res.redirect("urls_index");
+});
+
+app.get('/', (req, res) => {
+  let admin = false;
+//  if (req.cookies.user) {
+//  if (req.session.id) {
+  if (req.user) {
+    //let id = req.cookies.user;
+    //let id = req.session.id;
+    //let user = findById(id);
+    admin = req.user.admin;
+    loggedIn = true;
+  }
+  res.render('index', {loggedIn, admin});
+});
+
 app.get("/urls", (req, res) => {
+  let loggedIn = false;
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -33,7 +71,7 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  console.log("shortURL = ", shortURL);
+  console.log("New shortURL: ", shortURL);
   console.log(req.body.longURL);
   urlDatabase[shortURL] = req.body.longURL;
   console.log(urlDatabase);
@@ -43,6 +81,23 @@ app.post("/urls", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
+});
+
+app.get("/login", (req, res) => {
+  res.render('login');
+});
+
+// Login handler
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  const password = req.body.password;
+  const user = validateCredentials(username, password);
+  if (user) {
+    console.log(user, "has logged in.");
+    res.redirect("/urls_show");
+  } else {
+    res.redirect("/urls_index");
+  }
 });
 
 // Delete existing URL
@@ -60,4 +115,12 @@ app.post("/urls/:id", (req, res) => {
 
 function generateRandomString() {
   return shortid.generate();
+}
+
+function findUserByEmail(email) {
+  return users.find((user) => user.email == email);
+}
+
+function validateCredentials(username, password) {
+  return users.find((user) => user.email == username && user.password == password);
 }
