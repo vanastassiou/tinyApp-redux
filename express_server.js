@@ -7,7 +7,6 @@ const cookieParser = require("cookie-parser")
 //const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 
-
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -16,8 +15,14 @@ app.set("view engine", "ejs");
 
 // Problematic in-memory URL database
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b2xVn2: {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "1"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "2"
+  },
 };
 
 // Problematic in-memory user database
@@ -46,31 +51,43 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    res.status(400).send("You must be logged in to use TinyApp.");
+  } else {
   let templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: users[req.cookies.user_id],
+    userURLs: urlsForUser(req.cookies.user_id)
    };
   res.render("urls_index", templateVars);
-});
-
-app.get("/urls/:id", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.id,
-    user: users[req.cookies.user_id]
- };
-  res.render("urls_show", templateVars);
+  };
 });
 
 app.get("/urls/new", (req, res) => {
+  if (!req.cookies.user_id) {
+    console.log("Non-logged-in user accessing /urls/new");
+    res.redirect("/login");
+  } else {
+    console.log("Logged-in user accessing /urls/new");
+    let templateVars = {
+      user: users[req.cookies.user_id]
+    };
+    res.render("urls_new", templateVars);
+  };
+});
+
+app.get("/urls/:id", (req, res) => {
+  console.log("This is the Edit URLs endpoint.");
   let templateVars = {
+    shortURL: req.params.id,
     user: users[req.cookies.user_id]
   };
-  res.render("urls_new", templateVars);
+  res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  console.log("New shortURL", shortURL, "registed for", req.body.longURL);
+  console.log("New shortURL", shortURL, "registered for", req.body.longURL);
   urlDatabase[shortURL] = req.body.longURL;
   console.log("Current state of URL DB:", urlDatabase);
   res.redirect(`/urls:${shortURL}`);
@@ -102,7 +119,7 @@ app.post("/login", (req, res) => {
     res.redirect("/urls");
   } else if (!findUserByEmail(email)) {
     res.status(403).send("User not found.");
-  } else if (!validatePassword(password)) {
+  } else if (validatePassword(password) === false) {
     res.status(403).send("Invalid password.");
   }
 });
@@ -137,10 +154,11 @@ app.post("/register", (req,res) => {
   } else if (findUserByEmail(email)) {
     res.status(400).send("This e-mail address has already been registered.");
   } else {
+    const hash = bcrypt.hashSync(password, 10);
     let user = {
       "id": userId,
       "email": email,
-      "password": password,
+      "password": hash
     };
     users[userId] = user;
     console.log("New user created:", email, userId);
@@ -162,6 +180,9 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+
+// Helper functions
+
 function generateRandomString() {
   return shortid.generate();
 }
@@ -176,11 +197,22 @@ function findUserByEmail(email) {
 };
 
 function validatePassword(password) {
-  for (const key in users) {
-    if (users[key].password === password) {
-      console.log("Successful login by", users[key]);
-      return users[key].password;
+  for (var key in users) {
+    const storedHash = users[key].password;
+    if (bcrypt.compareSync(password, storedHash)) {
+      return true;
     };
   };
   return false;
+};
+
+
+function urlsForUser(id) {
+  const result = [];
+  for (key in urlDatabase) {
+    if (id === key) {
+      result.push(urlDatabase[key]);
+    };
+    return result;
+  };
 };
