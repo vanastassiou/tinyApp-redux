@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head></head>
-  <body style="font-size:20px; padding:50px;">
-    <% include partials/_header %>
-    This is the login page placeholder.
-  </body>
+<head>
+</head>
+<body>
+  <p>
+    <h2>TinyApp Login</h2>
+    <form method="POST" action="/login">
+      E-mail address: <input type="text" name="email">
+      Password: <input type="password" name="password">
+      <input type="submit" value="Log in">
+    </form>
+ </p>
+</body>
 </html>

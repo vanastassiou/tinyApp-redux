@@ -23,16 +23,16 @@ const urlDatabase = {
 // Problematic in-memory user database
 
 const users = {
-  1: {
+  user1: {
     id: "1",
     email: "weebl@weebls-stuff.com",
-    password: "12345678",
+    password: "12345678"
   },
-  2: {
+  user2: {
     id: "2",
     email: "bob@weebls-stuff.com",
-    password: "abcdefg",
-  },
+    password: "abcdefg"
+  }
 };
 
 app.listen(PORT, () => {
@@ -46,10 +46,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let loggedIn = false;
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"],
+    user: users[req.cookies.user_id]
    };
   res.render("urls_index", templateVars);
 });
@@ -57,14 +56,14 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    username: req.cookies["username"],
+    user: users[req.cookies.user_id]
  };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies.user_id]
   };
   res.render("urls_new", templateVars);
 });
@@ -84,52 +83,71 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Login handler
 app.get("/login", (req, res) => {
-  let templateVars = {
-    username: req.cookies["username"],
+  if (req.cookie) {
+    let templateVars = {
+      user: users[req.cookies.user_id]
+    };
+    res.redirect("/urls");
+  } else {
+    res.render("urls_login");
   };
-  res.render("urls_login", templateVars);
 });
 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
+  const email = req.body.email;
   const password = req.body.password;
-  res.cookie("username", username);
-  res.redirect("/urls");
+  console.log("Login inputs:", email, password);
+  if (findUserByEmail(email) && validatePassword(password)) {
+    res.cookie("user_id", findUserByEmail(email).id);
+    res.redirect("/urls");
+  } else if (!findUserByEmail(email)) {
+    res.status(403).send("User not found.");
+  } else if (!validatePassword(password)) {
+    res.status(403).send("Invalid password.");
+  }
 });
 
 // Logout handler
-app.get("/logout", (req, res) => {
-  res.redirect("/urls");
-});
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 // Registration handler
 
 app.get("/register", (req, res) => {
-  let templateVars = {
-    username: req.cookies["username"],
-  };
-  res.render("urls_register", templateVars);
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      urls: urlDatabase,
+      user: users[req.cookies.user_id]
+    };
+    res.render("urls_register", templateVars);
+  }
 });
 
 app.post("/register", (req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   const userId = generateRandomString();
-  let user = {
-    "id": userId,
-    "email": email,
-    "password": password,
+  if (!email || !password) {
+    res.status(400).send("Neither e-mail nor password may be blank.");
+  } else if (findUserByEmail(email)) {
+    res.status(400).send("This e-mail address has already been registered.");
+  } else {
+    let user = {
+      "id": userId,
+      "email": email,
+      "password": password,
+    };
+    users[userId] = user;
+    console.log("New user created:", email, userId);
+    res.cookie("user_id", userId);
+    res.redirect("/urls");
   };
-  users[userId] = user;
-  req.session.userId = userId; // Sets cookie containing "userId: $randomString"
-  res.redirect("/urls/");
 });
-
 
 // Delete existing URL
 app.post("/urls/:id/delete", (req, res) => {
@@ -148,10 +166,21 @@ function generateRandomString() {
   return shortid.generate();
 }
 
-// function findUserByEmail(email) {
-//   return users.find((user) => user.email == email);
-// }
+function findUserByEmail(email) {
+  for (const key in users) {
+    if (users[key].email === email) {
+      console.log("User found:", users[key].email);
+      return users[key];
+    };
+  };
+};
 
-// function validateCredentials(username, password) {
-//   return users.find((user) => user.email == username && user.password == password);
-// }
+function validatePassword(password) {
+  for (const key in users) {
+    if (users[key].password === password) {
+      console.log("Successful login by", users[key]);
+      return users[key].password;
+    };
+  };
+  return false;
+};

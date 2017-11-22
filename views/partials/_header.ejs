@@ -4,17 +4,13 @@
     <title></title>
   </head>
   <body>
-    <h2>Welcome to Our App</h2>
-    <% if (username) { %>
-      <p>Welcome back, <%= username %>!</p>
+    <h2>tinyApp</h2>
+    <% if (user) { %>
+      <p>Logged in: <%= user.email %></p>
       <form method="POST" action="/logout"><input type="submit" value="Log out">
       </form>
-          <% } else { %>
-      <p>
-        <form method="POST" action="/login">
-          <input type="text" name="username"> <input type="submit" value="Log in">
-        </form>
-       or <a href="/register">Register</a></p>
+    <% } else { %>
+      You are not logged in. Please <a href="/login">log in</a> or <a href="/register">register</a> to use TinyApp.
     <% } %>
   </body>
 </html>
