@@ -1,12 +1,14 @@
 <!doctype html>
 <html>
   <head>
-    <title>TinyApp Header</title>
+    <title></title>
   </head>
   <body>
-    <h2>TinyApp</h2>
-    <form method="POST" action="/login">
-      <input type="text" name="username" placeholder="Your email address">
-      <input type="submit" value="Login">
-		</form>
+    <h2>tinyApp</h2>
+    <% if (username) { %>
+      <p>Welcome back, <%= username %>!</p>
+      <form method="POST" action="/logout"><input type="submit" value="Log out">
+      </form>
+    <% } %>
+  </body>
 </html>

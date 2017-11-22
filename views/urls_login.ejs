@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+  <header>
+    <% include partials/_header %>
+  </header>
+  <p>
+    <form method="POST" action="/login">
+      E-mail address: <input type="text" name="username">
+      Password: <input type="text" name="password">
+      <input type="submit" value="Log in">
+    </form>
+   or <a href="/register">Register</a>
+ </p>
+</body>
+</html>
