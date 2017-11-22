@@ -46,7 +46,6 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let loggedIn = false;
   let templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id]
@@ -57,14 +56,14 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    user: users[req.session.user_id]
+    user: users[req.cookies.user_id]
  };
   res.render("urls_show", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: users[req.session.user_id]
+    user: users[req.cookies.user_id]
   };
   res.render("urls_new", templateVars);
 });
@@ -84,23 +83,34 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Login handler
 app.get("/login", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id]
+  if (req.cookie) {
+    let templateVars = {
+      user: users[req.cookies.user_id]
+    };
+    res.redirect("/urls");
+  } else {
+    res.render("urls_login");
   };
-  res.render("urls_login", templateVars);
 });
 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
+  const email = req.body.email;
   const password = req.body.password;
-  res.cookie("username", username);
-  res.redirect("/urls");
+  console.log("Login inputs:", email, password);
+  if (findUserByEmail(email) && validatePassword(password)) {
+    res.cookie("user_id", findUserByEmail(email).id);
+    res.redirect("/urls");
+  } else if (!findUserByEmail(email)) {
+    res.status(403).send("User not found.");
+  } else if (!validatePassword(password)) {
+    res.status(403).send("Invalid password.");
+  }
 });
 
 // Logout handler
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -112,7 +122,7 @@ app.get("/register", (req, res) => {
   } else {
     let templateVars = {
       urls: urlDatabase,
-      username: req.cookies["username"]
+      user: users[req.cookies.user_id]
     };
     res.render("urls_register", templateVars);
   }
@@ -123,7 +133,7 @@ app.post("/register", (req,res) => {
   const password = req.body.password;
   const userId = generateRandomString();
   if (!email || !password) {
-    res.status(400).send("E-mail and password cannot be blank.");
+    res.status(400).send("Neither e-mail nor password may be blank.");
   } else if (findUserByEmail(email)) {
     res.status(400).send("This e-mail address has already been registered.");
   } else {
@@ -159,11 +169,18 @@ function generateRandomString() {
 function findUserByEmail(email) {
   for (const key in users) {
     if (users[key].email === email) {
+      console.log("User found:", users[key].email);
       return users[key];
     };
   };
 };
 
-// function validateCredentials(username, password) {
-//   return users.find((user) => user.email == username && user.password == password);
-// }
+function validatePassword(password) {
+  for (const key in users) {
+    if (users[key].password === password) {
+      console.log("Successful login by", users[key]);
+      return users[key].password;
+    };
+  };
+  return false;
+};

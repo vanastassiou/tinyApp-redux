@@ -3,16 +3,13 @@
 <head>
 </head>
 <body>
-  <header>
-    <% include partials/_header %>
-  </header>
   <p>
+    <h2>TinyApp Login</h2>
     <form method="POST" action="/login">
-      E-mail address: <input type="text" name="username">
-      Password: <input type="text" name="password">
+      E-mail address: <input type="text" name="email">
+      Password: <input type="password" name="password">
       <input type="submit" value="Log in">
     </form>
-   or <a href="/register">Register</a>
  </p>
 </body>
 </html>

@@ -5,10 +5,12 @@
   </head>
   <body>
     <h2>tinyApp</h2>
-    <% if (username) { %>
-      <p>Welcome back, <%= username %>!</p>
+    <% if (user) { %>
+      <p>Logged in: <%= user.email %></p>
       <form method="POST" action="/logout"><input type="submit" value="Log out">
       </form>
+    <% } else { %>
+      You are not logged in. Please <a href="/login">log in</a> or <a href="/register">register</a> to use TinyApp.
     <% } %>
   </body>
 </html>
