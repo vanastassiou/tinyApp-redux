@@ -122,14 +122,21 @@ app.post("/register", (req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   const userId = generateRandomString();
-  let user = {
-    "id": userId,
-    "email": email,
-    "password": password,
+  if (!email || !password) {
+    res.status(400).send("E-mail and password cannot be blank.");
+  } else if (findUserByEmail(email)) {
+    res.status(400).send("This e-mail address has already been registered.");
+  } else {
+    let user = {
+      "id": userId,
+      "email": email,
+      "password": password,
+    };
+    users[userId] = user;
+    console.log("New user created:", email, userId);
+    res.cookie("user_id", userId);
+    res.redirect("/urls");
   };
-  users[userId] = user;
-  res.cookie("user_id", userId); // Sets cookie containing "user_id: $randomString"
-  res.redirect("/urls");
 });
 
 // Delete existing URL
@@ -149,9 +156,13 @@ function generateRandomString() {
   return shortid.generate();
 }
 
-// function findUserByEmail(email) {
-//   return users.find((user) => user.email == email);
-// }
+function findUserByEmail(email) {
+  for (const key in users) {
+    if (users[key].email === email) {
+      return users[key];
+    };
+  };
+};
 
 // function validateCredentials(username, password) {
 //   return users.find((user) => user.email == username && user.password == password);
