@@ -99,7 +99,7 @@ app.post("/urls", (req, res) => {
   "longURL": req.body.newLongURL,
   "userID": req.cookies.user_id
   }
-  console.log("Current state of URL DB:", urlDatabase);
+  console.log("New URL added. Current state of URL DB:", urlDatabase);
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
@@ -180,11 +180,12 @@ app.post("/register", (req,res) => {
 
 // Delete existing URL
 app.post("/urls/:id/delete", (req, res) => {
-  if (req.cookies.user_id != req.params.id) {
-    res.status(400).send("Sorry, you can only delete your own TinyURLs.");
+  let requestedURL = req.params.id;
+  if (req.cookies.user_id != urlDatabase[requestedURL].userID) {
+    res.status(400).send("Sorry, you can only delete your own URLs.");
   } else {
   delete urlDatabase[req.params.id];
-  console.log("Current state of urlDatabase:", urlDatabase);
+  console.log("URL deleted. Current state of URL DB:", urlDatabase);
   res.redirect("/urls");
   };
 });
