@@ -15,7 +15,7 @@ app.set("view engine", "ejs");
 
 // Problematic in-memory URL database
 const urlDatabase = {
-  b2xVn2: {
+  "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
     userID: "1"
   },
@@ -54,10 +54,12 @@ app.get("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     res.status(400).send("You must be logged in to use TinyApp.");
   } else {
+  let urlObject = getLoggedInUserURLs(req.cookies.user_id);
+  urlObject = urlObject
   let templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id],
-    userURLs: userURLs(req.cookies.user_id)
+    userURLs:
    };
   res.render("urls_index", templateVars);
   };
@@ -179,7 +181,7 @@ app.post("/register", (req,res) => {
 // Delete existing URL
 app.post("/urls/:id/delete", (req, res) => {
   if (req.cookies.user_id != req.params.id) {
-    res.status(400).send("You can only delete your own TinyURLs.");
+    res.status(400).send("Sorry, you can only delete your own TinyURLs.");
   } else {
   delete urlDatabase[req.params.id];
   console.log("Current state of urlDatabase:", urlDatabase);
@@ -189,9 +191,13 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Update existing URL
 app.post("/urls/:id", (req, res) => {
+  if (!req.body.longURLName) {
+    res.status(400).send("Sorry, you cannot add a blank URL.");
+  } else {
   urlDatabase[req.params.id] = req.body.longURLName;
   console.log(req.params.id, "updated to", req.body.longURLName)
   res.redirect("/urls");
+  };
 });
 
 
@@ -220,11 +226,12 @@ function validatePassword(password) {
   return false;
 };
 
-function userURLs(user_id) {
-  return Object.keys(urlDatabase).reduce((previous, current) => {
-    if(urlDatabase[current].user_id === user_id) {
-      previous.push(urlDatabase[current]);
-    }
-    return previous;
-  }, []);
-}
+function getLoggedInUserURLs(loggedInUser) {
+  let result = { };
+  for (var i in urlDatabase) {
+    if (urlDatabase[i].userID == loggedInUser) {
+      result[i] = urlDatabase[i].longURL;
+      };
+  };
+  return result;
+};
