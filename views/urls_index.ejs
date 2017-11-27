@@ -9,10 +9,10 @@
   </header>
 
   <ul> Here are your long URLs and their short versions:
-    <% for (i of userURLs) { %>
-        <li><%= userURLs[i] %> - <%= userURLs %>
-          <a href="/urls/<%= key %>">Edit</a>
-          <form method="POST" action="/urls/<%= key %>/delete">
+    <% for (i in userURLs) { %>
+        <li><%= i %> - <%= userURLs[i] %>
+          <a href="/urls/<%= i %>">Edit</a>
+          <form method="POST" action="/urls/<%= i %>/delete">
             <button type="submit">Delete</button>
           </form>
         </li>

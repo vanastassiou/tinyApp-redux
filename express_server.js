@@ -13,13 +13,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Grabbing Don's lecture notes
 app.use(cookieSession({
   name: "session",
-  keys: ["awesomekey"],
+  keys: ["awesomekey-kjghgrse"],
   maxAge: 24 * 60 * 60 * 1000
 }));
 
 app.use((req, res, next) => {
   req.user = (req.session.id) ? findUserById(req.session.id) : false;
-  next();
+  res.locals.user = req.user;
+  return next();
 });
 
 app.set("view engine", "ejs");
@@ -52,9 +53,6 @@ const users = {
   }
 };
 
-app.listen(PORT, () => {
-  console.log(`TinyApp server listening on port ${PORT}!`);
-});
 
 // Begin routes
 
@@ -62,116 +60,117 @@ app.get("/", (req, res) => {
   res.redirect("urls");
 });
 
-app.get("/urls", (req, res) => {
-  let urlObject = getLoggedInUserURLs(req.session.user_id);
+
+app.get("/urls", isLoggedIn, (req, res) => {
+  let urlObject = getLoggedInUserURLs(req.session.id);
   console.log(urlObject);
   let templateVars = {
     urls: urlDatabase,
-    user: users[req.session.user_id],
+    ////////////////user: users[req.session.user_id],
     userURLs: urlObject
    };
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
+
+app.get("/urls/new", isLoggedIn, (req, res) => {
   if (!req.user) {
     console.log("Non-logged-in user accessing /urls/new");
     res.redirect("/login");
   } else {
     console.log("Logged-in user accessing /urls/new");
     let templateVars = {
-      user: users[req.session.user_id]
+      //user: users[req.session.user_id]
     };
-    res.render("urls_new", templateVars);
+  res.render("urls_new", templateVars);
   };
 });
 
-app.get("/urls/:id", (req, res) => {
+
+app.get("/urls/:id", isLoggedIn, (req, res) => {
   console.log("This is the Edit URLs endpoint.");
-  let requestedURL = req.params.id;
-  let templateVars = {
-    shortURL: req.params.id,
-    user: users[req.session.user_id]
-  };
-  if (req.session.user_id != urlDatabase[requestedURL].userID) {
+  let shortURL = req.params.id;
+
+  if (req.session.id !== urlDatabase[shortURL].userID) {
     res.status(400).send("Sorry, you can only edit your own URLs.");
   } else {
-  res.render("urls_show", templateVars);
+    res.render("urls_show", {shortURL});
   };
 });
 
-app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
+
+app.post("/urls", isLoggedIn, (req, res) => {
+  const shortURL = generateRandomString();
+
   console.log("New shortURL", shortURL, "registered for", req.body.newLongURL);
   urlDatabase[shortURL] = {
-  "longURL": req.body.newLongURL,
-  "userID": req.session.user_id
+    "longURL": req.body.newLongURL,
+    "userID": req.session.id
   }
   console.log("New URL added. Current state of URL DB:", urlDatabase);
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
+
 app.get("/u/:shortURL", (req, res) => {
-  let redirectURL = req.params.shortURL;
-  let destination = urlDatabase[redirectURL]["longURL"];
-  res.redirect(destination);
+  const {shortURL} = req.params;
+  const {longURL} = urlDatabase[shortURL];
+
+  return res.redirect(longURL);
 });
 
-// Login handler
+
 app.get("/login", (req, res) => {
   if (req.user) {
-    let templateVars = {
-      user: users[req.session.user_id]
-    };
     res.redirect("/urls");
   } else {
     res.render("urls_login");
   };
 });
 
+
 app.post("/login", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
+  const {email, password} = req.body;
   console.log("Login inputs:", email, password);
-  if (findUserByEmail(email) && validatePassword(password)) {
-    req.session.id = findUserByEmail(email).id;
+  const user = findUserByEmail(email);
+
+  if (user && validatePassword(password)) {
+    req.session.id = user.id;
     res.redirect("/urls");
-  } else if (!findUserByEmail(email)) {
+  } else if (!user) {
     res.status(403).send("User not found.");
   } else if (validatePassword(password) === false) {
     res.status(403).send("Invalid password.");
   }
 });
 
-// Logout handler
 
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
-// Registration handler
 
 app.get("/register", (req, res) => {
-  if (req.session.user_id) {
+  if (req.session.id) {
     res.redirect("/urls");
   } else {
     let templateVars = {
       urls: urlDatabase,
-      user: users[req.session.user_id]
     };
     res.render("urls_register", templateVars);
-  }
+  };
 });
 
 app.post("/register", (req,res) => {
   const email = req.body.email;
   const password = req.body.password;
   const userId = generateRandomString();
+
   if (!email || !password) {
-    res.status(400).send("Neither e-mail nor password may be blank.");
+    return res.status(400).send("Neither e-mail nor password may be blank.");
   } else if (findUserByEmail(email)) {
-    res.status(400).send("This e-mail address has already been registered.");
+    return res.status(400).send("This e-mail address has already been registered.");
   } else {
     const hash = bcrypt.hashSync(password, 10);
     let user = {
@@ -181,31 +180,31 @@ app.post("/register", (req,res) => {
     };
     users[userId] = user;
     console.log("New user created:", email, userId);
-    req.session.id = findUserByEmail(email).id;
+    req.session.id = userId;
+    return res.redirect("/urls");
+  };
+});
+
+
+app.post("/urls/:id/delete", isLoggedIn, (req, res) => {
+  let shortURL = req.params.id;
+  if (req.session.id != urlDatabase[shortURL].userID) {
+    res.status(400).send("Sorry, you can only delete your own URLs.");
+  } else {
+    delete urlDatabase[shortURL];
+    console.log("URL deleted. Current state of URL DB:", urlDatabase);
     res.redirect("/urls");
   };
 });
 
-// Delete existing URL
-app.post("/urls/:id/delete", (req, res) => {
-  let requestedURL = req.params.id;
-  if (req.session.user_id != urlDatabase[requestedURL].userID) {
-    res.status(400).send("Sorry, you can only delete your own URLs.");
-  } else {
-  delete urlDatabase[req.params.id];
-  console.log("URL deleted. Current state of URL DB:", urlDatabase);
-  res.redirect("/urls");
-  };
-});
 
-// Update existing URL
 app.post("/urls/:id", (req, res) => {
-  if (!req.body.longURLName) {
+  if (!req.body.newLongURL) {
     res.status(400).send("Sorry, you cannot add a blank URL.");
   } else {
-  urlDatabase[req.params.id] = req.body.longURLName;
-  console.log(req.params.id, "updated to", req.body.longURLName)
-  res.redirect("/urls");
+    urlDatabase[req.params.id].longURL = req.body.newLongURL;
+    console.log(req.params.id, "updated to", req.body.newLongURL)
+    res.redirect("/urls");
   };
 });
 
@@ -213,13 +212,14 @@ app.post("/urls/:id", (req, res) => {
 // Helper functions
 
 function generateRandomString() {
-  return shortid.generate();
+  // ShortID is not truly random
+  // return shortid.generate();
 }
 
 function findUserByEmail(email) {
   for (const key in users) {
     if (users[key].email === email) {
-      console.log("User found:", users[key].email);
+      console.log("User e-mail found:", users[key].email);
       return users[key];
     };
   };
@@ -238,7 +238,7 @@ function validatePassword(password) {
 function getLoggedInUserURLs(loggedInUser) {
   let result = { };
   for (var i in urlDatabase) {
-    if (urlDatabase[i].userID == loggedInUser) {
+    if (urlDatabase[i].userID === loggedInUser) {
       result[i] = urlDatabase[i].longURL;
       };
   };
@@ -253,3 +253,14 @@ function findUserById(id) {
     };
   };
 };
+
+function isLoggedIn (req, res, next) {
+  if (!req.session.id || !req.user)
+    return res.redirect('/login')
+  else
+    return next();
+}
+
+app.listen(PORT, () => {
+  console.log(`TinyApp server listening on port ${PORT}!`);
+});
