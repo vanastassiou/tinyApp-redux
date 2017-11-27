@@ -87,10 +87,16 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  console.log("New shortURL", shortURL, "registered for", req.body.longURL);
-  urlDatabase[shortURL] = req.body.longURL;
+  console.log("New shortURL", shortURL, "registered for", req.body.newLongURL);
+  let newURL = {
+        [shortURL]: {
+        "longURL": req.body.newLongURL,
+        "userID": req.cookies.user_id
+      }
+    };
+  console.log(newURL);
   console.log("Current state of URL DB:", urlDatabase);
-  res.redirect(`/urls:${shortURL}`);
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -177,6 +183,7 @@ app.post("/urls/:id/delete", (req, res) => {
 // Update existing URL
 app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = req.body.longURLName;
+  console.log(req.params.id, "updated to", req.body.longURLName)
   res.redirect("/urls");
 });
 
