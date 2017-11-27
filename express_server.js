@@ -55,11 +55,11 @@ app.get("/urls", (req, res) => {
     res.status(400).send("You must be logged in to use TinyApp.");
   } else {
   let urlObject = getLoggedInUserURLs(req.cookies.user_id);
-  urlObject = urlObject
+  console.log(urlObject);
   let templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id],
-    userURLs:
+    userURLs: urlObject
    };
   res.render("urls_index", templateVars);
   };
