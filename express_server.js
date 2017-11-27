@@ -2,7 +2,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 8080; // default port 8080
-const shortid = require("shortid");
+
+// shortIDs are not truly random
+// const shortid = require("shortid");
+
+var randomstring = require("randomstring");
+
 //const cookieParser = require("cookie-parser")
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
@@ -26,7 +31,8 @@ app.use((req, res, next) => {
 app.set("view engine", "ejs");
 
 
-// Problematic in-memory URL database
+// In-memory URL database for testing and development
+
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -38,7 +44,9 @@ const urlDatabase = {
   },
 };
 
-// Problematic in-memory user database
+
+// Problematic in-memory user database; can't log in as these users
+// since there is no stored hash for bcrypt to compare
 
 const users = {
   user1: {
@@ -212,8 +220,7 @@ app.post("/urls/:id", (req, res) => {
 // Helper functions
 
 function generateRandomString() {
-  // ShortID is not truly random
-  // return shortid.generate();
+  return randomstring.generate(8);
 }
 
 function findUserByEmail(email) {
