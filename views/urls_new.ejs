@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head></head>
-  <body style="font-size:20px; padding:50px;">
+  <body>
     <% include partials/_header %>
-    <form action="/urls" method="POST" style="margin:150px;">
-      <label for="newLongURL">Enter a URL:</label>
-      <input id="newLongURL" type="text" name="newLongURL" placeholder="http://" style="width: 300px">
-      <input type="submit" value="Submit new URL">
-    </form>
+    <p>
+      <form action="/urls" method="POST">
+        <label for="newLongURL">Enter a URL to tinify:</label>
+        <input id="newLongURL" type="text" name="newLongURL" placeholder="http://" style="width: 300px">
+        <input type="submit" value="Reverse embiggen!">
+      </form>
+    </p>
   </body>
 </html>

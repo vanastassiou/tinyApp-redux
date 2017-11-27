@@ -4,11 +4,10 @@
     <title></title>
   </head>
   <body>
-    <h2>tinyApp</h2>
+    <h1>tinyApp</h1>
     <% if (user) { %>
-      <p>Logged in: <%= user.email %></p>
-      <form method="POST" action="/logout"><input type="submit" value="Log out">
-      </form>
+      <p>Welcome, <%= user.email %>! <form method="POST" action="/logout"><input type="submit" value="Log out"></form>
+      </p>
     <% } else { %>
       You are not logged in. Please <a href="/login">log in</a> or <a href="/register">register</a> to use TinyApp.
     <% } %>
