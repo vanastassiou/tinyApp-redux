@@ -2,10 +2,14 @@
 
 This is my second attempt at the TinyApp project for Lighthouse Labs. I decided to start from scratch because it was a better use of my time than trying to untangle my code spaghetti from a week and a half ago.
 
+## Screencaps
+
+!["Screencap of login page"](https://github.com/vanastassiou/tinyApp-redux/blob/master/login-screencap.png)
+!["Screencap of URLs list"](https://github.com/vanastassiou/tinyApp-redux/blob/master/urls-screencap.png)
 
 # Functional requirements (from the project page)
 
-### User Stories
+## User Stories
 * As an avid Twitter poster, I want to be able to shorten links so that I can fit more non-link text in my tweets
 * As a Twitter reader, I want to be able to visit sites via shortened links, so that I can read interesting content
 * (Stretch) As an avid Twitter poster, I want to be able to see how many times my subscribers visit my links, so that I can learn what content they like
