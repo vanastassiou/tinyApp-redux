@@ -57,7 +57,7 @@ app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id],
-    userURLs: urlsForUser(req.cookies.user_id)
+    userURLs: userURLs(req.cookies.user_id)
    };
   res.render("urls_index", templateVars);
   };
@@ -78,30 +78,33 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   console.log("This is the Edit URLs endpoint.");
+  let requestedURL = req.params.id;
   let templateVars = {
     shortURL: req.params.id,
     user: users[req.cookies.user_id]
   };
+  if (req.cookies.user_id != urlDatabase[requestedURL].userID) {
+    res.status(400).send("Sorry, you can only edit your own URLs.");
+  } else {
   res.render("urls_show", templateVars);
+  };
 });
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   console.log("New shortURL", shortURL, "registered for", req.body.newLongURL);
-  let newURL = {
-        [shortURL]: {
-        "longURL": req.body.newLongURL,
-        "userID": req.cookies.user_id
-      }
-    };
-  console.log(newURL);
+  urlDatabase[shortURL] = {
+  "longURL": req.body.newLongURL,
+  "userID": req.cookies.user_id
+  }
   console.log("Current state of URL DB:", urlDatabase);
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  let redirectURL = req.params.shortURL;
+  let destination = urlDatabase[redirectURL]["longURL"];
+  res.redirect(destination);
 });
 
 // Login handler
@@ -175,9 +178,13 @@ app.post("/register", (req,res) => {
 
 // Delete existing URL
 app.post("/urls/:id/delete", (req, res) => {
+  if (req.cookies.user_id != req.params.id) {
+    res.status(400).send("You can only delete your own TinyURLs.");
+  } else {
   delete urlDatabase[req.params.id];
   console.log("Current state of urlDatabase:", urlDatabase);
   res.redirect("/urls");
+  };
 });
 
 // Update existing URL
@@ -213,13 +220,11 @@ function validatePassword(password) {
   return false;
 };
 
-
-function urlsForUser(id) {
-  const result = [];
-  for (key in urlDatabase) {
-    if (id === key) {
-      result.push(urlDatabase[key]);
-    };
-    return result;
-  };
-};
+function userURLs(user_id) {
+  return Object.keys(urlDatabase).reduce((previous, current) => {
+    if(urlDatabase[current].user_id === user_id) {
+      previous.push(urlDatabase[current]);
+    }
+    return previous;
+  }, []);
+}
